@@ -30,24 +30,25 @@ makeServer().then((server) => {
     res.send('Hello from public route.');
   });
 
+  app.use(checkJwt);
+
+  server.applyMiddleware({ app });
+
   app.post('/schema', textParser, function (req, res) {
     const newSchema = req.body;
     const loc = path.join(__dirname, 'config/schema.graphql');
 
     fs.writeFileSync(loc, newSchema);
 
-    res.send(loc);
-  });
-
-  server.applyMiddleware({ app });
-
-  app.use(checkJwt);
-  app.get('/protected', (req, res) => {
-    res.send('Hello from protected route.');
+    res.send(newSchema);
   });
 
   app.use(function (err, req, res, next) {
-    res.status(401).send('Invalid credentials.');
+    res.status(401).json({
+      data: {
+        Message: 'Invalid credentials',
+      },
+    });
   });
 
   app.listen(port, () => {
