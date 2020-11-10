@@ -1,7 +1,10 @@
 const express = require('express');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 const jwt = require('express-jwt');
 const jwksRsa = require('jwks-rsa');
+const fs = require('fs');
+const path = require('path');
 
 const { makeServer } = require('./config/apollo');
 
@@ -17,14 +20,23 @@ const checkJwt = jwt({
   algorithms: ['RS256'],
 });
 
+const textParser = bodyParser.text({ type: 'text/plain' });
+
 makeServer().then((server) => {
   const app = express();
   app.use(cors());
 
-  app.use(express.static('public'));
-
   app.get('/', (req, res) => {
     res.send('Hello from public route.');
+  });
+
+  app.post('/schema', textParser, function (req, res) {
+    const newSchema = req.body;
+    const loc = path.join(__dirname, 'config/schema.graphql');
+
+    fs.writeFileSync(loc, newSchema);
+
+    res.send(loc);
   });
 
   server.applyMiddleware({ app });

@@ -9,4 +9,4 @@ RUN yarn install
 COPY . .
 
 EXPOSE 4000
-CMD [ "node", "src/server.js" ]
+CMD [ "yarn", "nodemon", "--watch", "src/config/schema.graphql", "src/server.js" ]
