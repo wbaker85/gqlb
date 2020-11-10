@@ -45,6 +45,8 @@ services:
       - HOST_NAME=${HOST_NAME}
       - DB_USER=${NEO4J_AUTH_USERNAME}
       - DB_PASSWORD=${NEO4J_AUTH_PASSWORD}
+    volumes:
+      - './schema.graphql:/usr/src/app/src/config/schema.graphql'
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.server.rule=Host(`${HOST_NAME}`)'
