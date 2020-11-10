@@ -5,7 +5,7 @@ import '../node_modules/graphiql/graphiql.css';
 
 function App({ token }) {
   const graphQLFetcher = async (graphQLParams) => {
-    const res = await fetch('https://gqlb.duckdns.org/graphql', {
+    const res = await fetch(`${process.env.REACT_APP_SERVER_URL}/graphql`, {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
