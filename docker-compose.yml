@@ -1,0 +1,55 @@
+version: '3.2'
+services:
+  traefik:
+    image: 'traefik:latest'
+    container_name: 'traefik'
+    restart: always
+    command:
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
+      - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
+      - '--entrypoints.websecure.address=:443'
+      - '--certificatesresolvers.myresolver.acme.tlschallenge=true'
+      - '--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL}'
+      - '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
+    ports:
+      - '80:80'
+      - '443:443'
+      - '8080:8080'
+    volumes:
+      - 'certs:/letsencrypt'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+
+  neo4j:
+    image: neo4j:latest
+    restart: always
+    container_name: 'neo4j'
+    ports:
+      - '7474:7474'
+      - '7473:7473'
+      - '7687:7687'
+    environment:
+      - NEO4J_AUTH=${NEO4J_AUTH_USERNAME}/${NEO4J_AUTH_PASSWORD}
+
+  server:
+    build: ./server
+    restart: always
+    container_name: 'server'
+    ports:
+      - '4000:4000'
+    environment:
+      - JWKS_URI=${JWKS_URI}
+      - HOST_NAME=${HOST_NAME}
+      - DB_USER=${NEO4J_AUTH_USERNAME}
+      - DB_PASSWORD=${NEO4J_AUTH_PASSWORD}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.server.rule=Host(`${HOST_NAME}`)'
+      - 'traefik.http.routers.server.entrypoints=websecure'
+      - 'traefik.http.routers.server.tls.certresolver=myresolver'
+
+volumes:
+  certs:
