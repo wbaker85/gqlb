@@ -31,6 +31,8 @@ services:
       - '7474:7474'
       - '7473:7473'
       - '7687:7687'
+    volumes:
+      - ./db:/data
     environment:
       - NEO4J_AUTH=${NEO4J_AUTH_USERNAME}/${NEO4J_AUTH_PASSWORD}
 
